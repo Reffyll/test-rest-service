@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import ru.itlearn.testrestservice.model.Request;
 import ru.itlearn.testrestservice.model.Response;
+import ru.itlearn.testrestservice.service.ModifyRequestService;
 import ru.itlearn.testrestservice.service.MyModifyService;
 
 @Slf4j
@@ -17,16 +18,18 @@ import ru.itlearn.testrestservice.service.MyModifyService;
 public class MyController {
 
     private final MyModifyService myModifyService;
+    private final ModifyRequestService modifyRequestService;
 
     @Autowired
-    public MyController(@Qualifier("ModifyUid") MyModifyService myModifyService) {
+    public MyController(@Qualifier("ModifySystemTime") MyModifyService myModifyService, ModifyRequestService modifyRequestService) {
         this.myModifyService = myModifyService;
+        this.modifyRequestService = modifyRequestService;
     }
 
     @PostMapping(value = "/feedback")
     public ResponseEntity<Response> feedback(@RequestBody Request request){
 
-        log.info("Входящий request : " + request);
+        log.warn("Входящий request : " + request);
 
         Response response = Response.builder()
                 .uid(request.getUid())
@@ -37,11 +40,13 @@ public class MyController {
                 .errorMessage("")
                 .build();
 
-        Response responseAfterModify = myModifyService.modify(response);
-        log.warn("Опасно");
-        log.error("Очень опасно");
+        modifyRequestService.modifyRq(request);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        Response responseAfterModify = myModifyService.modify(response);
+
+        log.warn("Исходящий response : " + response);
+
+        return new ResponseEntity<>(responseAfterModify, HttpStatus.OK);
 
     }
 
